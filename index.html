@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCI CHAMPIONS | The Ultimate History</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. CORE DESIGN SYSTEM --- */
+        :root {
+            --bg-deep: #050505;
+            --bg-card: #121212;
+            --text-main: #ffffff;
+            --text-sub: #aaaaaa;
+            --gold: #FFD700;
+            --border-color: #333;
+            
+            /* Font Stacks */
+            --font-head: 'Oswald', sans-serif;
+            --font-mono: 'Roboto Mono', monospace;
+            --font-body: 'Noto Sans JP', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- 2. HEADER --- */
+        header {
+            height: 60vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #050505 80%);
+            text-align: center; position: relative;
+            border-bottom: 1px solid var(--border-color);
+            z-index: 10;
+        }
+        h1 {
+            font-family: var(--font-head); font-size: clamp(3rem, 10vw, 7rem);
+            line-height: 0.9; text-transform: uppercase; letter-spacing: -2px;
+            background: linear-gradient(180deg, #fff, #444); -webkit-background-clip: text; color: transparent;
+        }
+        .subtitle {
+            font-family: var(--font-mono); color: var(--gold); margin-top: 20px;
+            font-size: 1.1rem; letter-spacing: 2px;
+        }
+        .scroll-hint {
+            position: absolute; bottom: 30px; font-size: 0.8rem; color: #555;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+
+        /* --- 3. TIMELINE STRUCTURE --- */
+        .timeline-wrapper {
+            max-width: 1000px; margin: 0 auto; padding: 80px 20px; position: relative;
+        }
+        .timeline-line {
+            position: absolute; top: 0; bottom: 0; left: 50%; width: 2px;
+            background: linear-gradient(180deg, transparent, #333 10%, #333 90%, transparent);
+            transform: translateX(-50%); z-index: 0;
+        }
+
+        .year-group {
+            display: flex; justify-content: center; align-items: center;
+            margin-bottom: 100px; position: relative; z-index: 1;
+            opacity: 0; transform: translateY(50px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .year-group.visible { opacity: 1; transform: translateY(0); }
+
+        /* Year Badge */
+        .year-badge {
+            width: 70px; height: 70px; border-radius: 50%;
+            background: var(--bg-deep); border: 2px solid var(--gold);
+            color: var(--gold); font-family: var(--font-head); font-size: 1.5rem; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.15);
+            position: absolute; left: 50%; transform: translateX(-50%);
+            z-index: 2;
+        }
+
+        /* Content Card */
+        .show-card {
+            width: 42%; background: var(--bg-card);
+            border-radius: 12px; overflow: hidden; border: 1px solid #222;
+            position: relative; cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex; flex-direction: column;
+        }
+        .show-card:hover {
+            transform: scale(1.03); box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            border-color: #555;
+        }
+        
+        .year-group:nth-child(odd) .show-card { margin-right: auto; text-align: right; }
+        .year-group:nth-child(even) .show-card { margin-left: auto; text-align: left; }
+        
+        .year-group:nth-child(odd) .show-card::after {
+            content: ''; position: absolute; top: 35px; right: -38px; width: 38px; height: 1px; background: #444;
+        }
+        .year-group:nth-child(even) .show-card::before {
+            content: ''; position: absolute; top: 35px; left: -38px; width: 38px; height: 1px; background: #444;
+        }
+
+        /* Card Internals */
+        .corps-color-bar { height: 6px; width: 100%; flex-shrink: 0;}
+        .card-content { padding: 25px; display: flex; flex-direction: column; height: 100%; }
+        
+        .score-display {
+            font-family: var(--font-mono); color: var(--gold); font-weight: bold; font-size: 0.9rem;
+            margin-bottom: 5px; display: block; opacity: 0.8;
+        }
+        .corps-name {
+            font-family: var(--font-head); font-size: 1.8rem; line-height: 1; text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .show-title {
+            font-size: 1.1rem; color: #fff; font-style: italic; margin-bottom: 15px; display: block; font-weight: bold;
+        }
+        .show-desc {
+            font-size: 0.9rem; color: #aaa; margin-bottom: 15px; line-height: 1.5;
+            border-top: 1px solid #222; padding-top: 10px;
+        }
+        .click-hint {
+            font-size: 0.75rem; color: #666; text-transform: uppercase; letter-spacing: 1px;
+            display: flex; align-items: center; gap: 5px; margin-top: auto;
+            justify-content: inherit; 
+        }
+        .play-icon { width: 16px; height: 16px; border-radius: 50%; background: #333; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 8px; margin: 0 5px;}
+
+        /* Tie Handling */
+        .tie-container { display: flex; flex-direction: column; gap: 20px; width: 42%; }
+        .year-group:nth-child(odd) .tie-container { margin-right: auto; align-items: flex-end; }
+        .year-group:nth-child(even) .tie-container { margin-left: auto; align-items: flex-start; }
+        .tie-container .show-card { width: 100%; }
+
+        /* Modal Styles (Updated) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(8px);
+            z-index: 100; display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; }
+        .modal-window {
+            width: 90%; max-width: 600px; background: #161616; border: 1px solid #444;
+            border-radius: 16px; padding: 40px; text-align: center;
+            transform: scale(0.9); transition: transform 0.3s;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .modal-overlay.active .modal-window { transform: scale(1); }
+        
+        /* New Description Style in Modal */
+        .modal-desc-text {
+            font-size: 0.95rem; color: #ccc; margin: 20px 0; line-height: 1.8;
+            border-top: 1px solid #333; border-bottom: 1px solid #333;
+            padding: 20px 0; width: 100%; text-align: left;
+        }
+
+        .btn-youtube {
+            display: inline-block; background: #ff0000; color: white;
+            padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: bold;
+            font-family: var(--font-head); letter-spacing: 1px;
+            transition: 0.2s;
+        }
+        .btn-youtube:hover { box-shadow: 0 5px 20px rgba(255,0,0,0.4); transform: translateY(-2px); }
+
+        @media (max-width: 768px) {
+            .timeline-line { left: 30px; }
+            .year-badge { left: 30px; width: 50px; height: 50px; font-size: 1.1rem; }
+            .year-group { flex-direction: column; align-items: flex-end; margin-bottom: 50px; }
+            .show-card, .tie-container { width: calc(100% - 70px); margin-left: auto !important; text-align: left !important; }
+            .year-group:nth-child(odd) .show-card::after, .year-group:nth-child(even) .show-card::before { display: none; }
+            .click-hint { justify-content: flex-start; }
+            h1 { font-size: 3.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Champions<br>Row</h1>
+        <p class="subtitle">THE DEFINITIVE DCI HISTORY 1972-2024</p>
+        <div class="scroll-hint">SCROLL TO EXPLORE</div>
+    </header>
+
+    <div class="timeline-wrapper" id="timeline-target">
+        <div class="timeline-line"></div>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal-window">
+            <div style="align-self: flex-end; font-size:2rem; cursor:pointer; color:#888;" onclick="closeModal()">&times;</div>
+            <div style="color:var(--gold); font-family:var(--font-mono); margin-bottom:10px;" id="m-year">YEAR</div>
+            <h2 style="font-family:var(--font-head); font-size:2.5rem; line-height:1; color:#fff; margin-bottom:10px;" id="m-corps">CORPS</h2>
+            <p style="color:#fff; font-style:italic; font-size:1.2rem;" id="m-show">SHOW</p>
+            
+            <p class="modal-desc-text" id="m-desc">Description goes here...</p>
+
+            <a href="#" target="_blank" class="btn-youtube" id="m-link">▶ SEARCH YOUTUBE</a>
+        </div>
+    </div>
+
+    <script>
+        const history = [
+            { 
+                year: 2024, corps: "Bluecoats", show: "Change Is Everything", score: "98.750", color: "#0099CC",
+                desc: "「エントロピー」をテーマに、混沌と秩序を行き来する現代アートのようなショー。形を変え続けるステージと、静寂すらも音楽にした緻密な設計で、観客の知覚を揺さぶった。"
+            },
+            { 
+                year: 2023, corps: "Blue Devils", show: "The Cut-Outs", score: "99.200", color: "#005596",
+                desc: "画家マティスの「切り絵」がモチーフ。視覚と聴覚の境界を溶かすような色彩感覚と、BD史上最も洗練されたビジュアル表現で、芸術の域に達した圧巻のシーズン。"
+            },
+            { 
+                year: 2022, corps: "Blue Devils", show: "Tempus Blue", score: "98.750", color: "#005596",
+                desc: "「青」の起源と時間を巡る旅。ジャズ、クラシック、現代音楽を自在に行き来するBDサウンドの真骨頂。特にスネアドラムのグルーヴ感とカンパニーフロントの美しさは必見。"
+            },
+            { 
+                year: 2021, corps: "No Champion", show: "Celebration Tour", score: "---", color: "#333", special: true,
+                desc: "パンデミックからの復活を祝う非競技シーズン。順位やスコアを超え、ただ「音楽ができる喜び」を分かち合った、歴史上最もエモーショナルな夏。"
+            },
+            { 
+                year: 2020, corps: "Season Cancelled", show: "COVID-19 Pandemic", score: "---", color: "#333", special: true,
+                desc: "世界から音が消えた夏。しかし、スピリットは決して消えることはなかった。"
+            },
+            { 
+                year: 2019, corps: "Blue Devils", show: "Ghostlight", score: "98.325", color: "#005596",
+                desc: "「劇場に棲むゴースト」の伝説。閉鎖された劇場の妖しさと華やかさを表現。プロップ（大道具）を巧みに使い、フィールド全体を巨大な舞台装置へと変貌させた。"
+            },
+            { 
+                year: 2018, corps: "Santa Clara Vanguard", show: "Babylon", score: "98.625", color: "#D9002A",
+                desc: "SCV悲願の復活優勝。都会の孤独と再生を描くハードボイルドな世界観。「My Body is a Cage」でのバリトンソロと、圧倒的な金管の音圧が涙を誘う。"
+            },
+            { 
+                year: 2017, corps: "Blue Devils", show: "Metamorph", score: "99.650", color: "#005596",
+                desc: "BD創設60周年記念。伝統的な制服から現代的な衣装への「脱皮（変身）」をショーの中で表現。DCI史上最高得点（当時）を叩き出した、進化の象徴。"
+            },
+            { 
+                year: 2016, corps: "Bluecoats", show: "Down Side Up", score: "97.650", color: "#0099CC",
+                desc: "歴史的転換点。伝統的なユニフォームを捨て、巨大なスロープ（滑り台）を導入。マーチングを「歩く芸術」から「動的な舞台芸術」へと書き換えた革命作。"
+            },
+            { 
+                year: 2015, corps: "Blue Devils", show: "Ink", score: "97.650", color: "#005596",
+                desc: "「インクと物語」がテーマ。K-POPからクラシックまで取り入れる柔軟性と、まるで絵本から飛び出したようなファンタジックなドリルデザイン。"
+            },
+            { 
+                year: 2014, corps: "Blue Devils", show: "Felliniesque", score: "99.650", color: "#005596",
+                desc: "映画監督フェリーニの世界。サーカスのような祝祭感と映画的なカット割り。99.650という驚異的なスコアで、エンターテインメントの頂点を見せつけた。"
+            },
+            { 
+                year: 2013, corps: "Carolina Crown", show: "E=mc²", score: "98.300", color: "#532e6d",
+                desc: "Crown初優勝。物理法則への挑戦。30人のブラスラインがまるで一つの巨大なパイプオルガンのように鳴り響く「紫の音圧」は、DCI史上最強の金管と名高い。"
+            },
+            { 
+                year: 2012, corps: "Blue Devils", show: "Cabaret Voltaire", score: "98.700", color: "#005596",
+                desc: "ダダイズム（既成概念の破壊）へのオマージュ。不条理で難解、しかし計算され尽くしたカオス。理解を超えた先にある「美」を提示した問題作。"
+            },
+            { 
+                year: 2011, corps: "The Cadets", show: "Between Angels and Demons", score: "98.350", color: "#78002E",
+                desc: "天使と悪魔の対立。ユニフォームを左右で色分けし、善と悪が入り乱れる様子を視覚化。Cadetsらしい高速ドリルと明快なストーリーテリングが融合。"
+            },
+            { 
+                year: 2010, corps: "Blue Devils", show: "Through a Glass, Darkly", score: "98.900", color: "#005596",
+                desc: "「鏡」を使った視覚トリック。フィールドに設置された鏡が、観客や演者を映し出し、現実と虚構を撹乱させた。クールで知的なBDスタイルの極致。"
+            },
+            { 
+                year: 2009, corps: "Blue Devils", show: "1930", score: "99.050", color: "#005596",
+                desc: "大恐慌時代の希望と絶望。椅子を使った独創的な演出と、ピアノを取り入れた構成。シンプルながらも感情に訴えかける、大人のマーチング。"
+            },
+            { 
+                year: 2008, corps: "Phantom Regiment", show: "Spartacus", score: "98.125", color: "#f5f5f5", textColor: "#000",
+                desc: "伝説の逆転劇。「私はスパルタクスだ！」の叫びと共に、フィールドが古代ローマの闘技場と化した。指揮者が殺される衝撃のラストは、今なお語り草。"
+            },
+            { 
+                year: 2007, corps: "Blue Devils", show: "Winged Victory", score: "98.000", color: "#005596",
+                desc: "サモトラケのニケ。強烈な色彩と、空を切り裂くようなハイノート。圧倒的な「強さ」と「勝利」への執念を具現化した、王者の貫禄漂うショー。"
+            },
+            { 
+                year: 2006, corps: "The Cavaliers", show: "Machine", score: "97.200", color: "#009639",
+                desc: "人間がロボットになった年。一糸乱れぬ動き、機械的なサウンド、そして「ロボットウォーク」。有機的な感情を排し、徹底して無機質を演じ切った傑作。"
+            },
+            { 
+                year: 2005, corps: "The Cadets", show: "The Zone", score: "99.150", color: "#78002E",
+                desc: "「夢の中」の世界。逆再生される音楽、ドアを使った演出、奇妙なキャラクター。不可思議で幻想的な世界観を、超絶技巧の演奏で支えた。"
+            },
+            { 
+                year: 2004, corps: "The Cavaliers", show: "007", score: "98.700", color: "#009639",
+                desc: "ジェームズ・ボンドの世界。「スパイ映画」をマーチングで完全再現。クールな身のこなしと、ユーモア溢れる演出で観客を魅了したエンタメ大作。"
+            },
+            { 
+                year: 2003, corps: "Blue Devils", show: "Phenomenon of Cool", score: "98.800", color: "#005596",
+                desc: "「Coolとは何か」。ジャズの真髄を見せつけたショー。リラックスしていながら鋭い、BDにしかできない洗練された大人の余裕。"
+            },
+            { 
+                year: 2002, corps: "The Cavaliers", show: "Frameworks", score: "99.150", color: "#009639",
+                desc: "「シンメトリーの悪魔」。幾何学的な美しさを極限まで追求。ドリルデザインが完璧すぎて、もはや人間業に見えない「視覚の革命」。"
+            },
+            { 
+                year: 2001, corps: "The Cavaliers", show: "Four Corners", score: "98.350", color: "#009639",
+                desc: "四角形へのこだわり。フィールドの四隅を使った構成や、正方形が変形していくドリルなど、図形的な面白さを音楽と完璧に同期させた。"
+            },
+            { 
+                year: 2000, tie: true, winners: [
+                    { corps: "The Cadets", show: "We Are The Future", score: "97.650", color: "#78002E", desc: "ミレニアム・セレブレーション。新時代の幕開けを高らかに宣言する、エネルギッシュで希望に満ちた超高速パフォーマンス。" },
+                    { corps: "The Cavaliers", show: "Niagara Falls", score: "97.650", color: "#009639", desc: "水の流動性を表現。滝のように流れるドリル、水しぶきのようなサウンド。視覚と聴覚で「水」を感じさせる、Cavaliers黄金期の始まり。" }
+                ]
+            },
+            { 
+                year: 1999, tie: true, winners: [
+                    { corps: "Blue Devils", show: "Rhythms... At the Edge of Time", score: "98.400", color: "#005596", desc: "リズムの極致。変拍子を多用した難曲を、信じられない精度で演奏。現代音楽の複雑さとスリリングさを体現した。" },
+                    { corps: "Santa Clara Vanguard", show: "Inventions for a New Millennium", score: "98.400", color: "#D9002A", desc: "現代的で都会的なSCV。ミニマル・ミュージックを取り入れたスタイリッシュな構成は、その後のマーチングのトレンドを先取りしていた。" }
+                ]
+            },
+            { 
+                year: 1998, corps: "The Cadets", show: "Stonehenge", score: "98.400", color: "#78002E",
+                desc: "古代遺跡の神秘。巨石が並ぶような重厚なドリルと、原始的なエネルギー。古代と現代が交錯するような不思議な迫力を持ったショー。"
+            },
+            { 
+                year: 1997, corps: "Blue Devils", show: "As Time Goes By", score: "98.400", color: "#005596",
+                desc: "往年のハリウッド映画音楽。ロマンティックでノスタルジック。BDの持つ「艶」と「色気」が全開になった、極上のラブソングのようなショー。"
+            },
+            { 
+                year: 1996, tie: true, winners: [
+                    { corps: "Blue Devils", show: "Club Blue: A Gangster Chronicle", score: "97.400", color: "#005596", desc: "暗黒街のギャングたち。危険な香りとジャズの暴力性。タフでワイルドなBDの魅力を詰め込んだハードボイルド・アクション。" },
+                    { corps: "Phantom Regiment", show: "A Defiant Heart", score: "97.400", color: "#f5f5f5", textColor: "#000", desc: "ショスタコーヴィチの交響曲。重厚で劇的、そして圧倒的な「音圧」。クラシカルなマーチングの完成形とも言える、魂の演奏。" }
+                ]
+            },
+            { 
+                year: 1995, corps: "The Cavaliers", show: "The Planets", score: "98.300", color: "#009639",
+                desc: "ホルストの「惑星」。宇宙的な広がりと神秘。従来の軍隊的な動きから脱却し、芸術的なヴィジュアル表現へと舵を切った記念碑的作品。"
+            },
+            { 
+                year: 1994, corps: "Blue Devils", show: "My Spanish Heart", score: "98.400", color: "#005596",
+                desc: "チック・コリアの名曲。情熱的なスパニッシュ・ジャズと、驚異的なソプラノ・ソロ。夏の夜に燃え上がるような熱気を感じさせる名演。"
+            },
+            { 
+                year: 1993, corps: "The Cadets", show: "In the Spring, at the Time When Kings Go Off to War", score: "97.400", color: "#78002E",
+                desc: "「戦争と平和」。Star of Indianaとの死闘を制した伝説の年。超高速ドリルと複雑な現代音楽を完璧にコントロールした、アスリート・マーチングの金字塔。"
+            },
+            { 
+                year: 1992, corps: "The Cavaliers", show: "Revolution", score: "97.500", color: "#009639",
+                desc: "「革命」。Cavaliers初優勝。ユーモアと楽しさ、そして確かな技術。観客を笑顔にさせるエンターテインメント性で頂点に立った。"
+            },
+            { 
+                year: 1991, corps: "Star of Indiana", show: "Roman Images", score: "97.000", color: "#c53461",
+                desc: "古代ローマの栄華。十字架のドリルがあまりにも有名。レスピーギの色彩豊かな音楽を、完璧な計算のもとで視覚化した。"
+            },
+            { 
+                year: 1990, corps: "Cadets of Bergen County", show: "A Bernstein Celebration", score: "97.700", color: "#78002E",
+                desc: "バーンスタインへのトリビュート。遊び心満載の演出と、変幻自在のドリル。「Zプルフ」と呼ばれる伝説的な動きは、今見ても鳥肌が立つ。"
+            },
+            { 
+                year: 1989, corps: "Santa Clara Vanguard", show: "Phantom of the Opera", score: "98.800", color: "#D9002A",
+                desc: "「オペラ座の怪人」。劇的でマジカル。衣装チェンジのトリックや、悲劇的な結末。ミュージカルの世界をフィールドに持ち込んだ歴史的傑作。"
+            },
+            { 
+                year: 1988, corps: "Madison Scouts", show: "Malaguena", score: "97.100", color: "#004d2c",
+                desc: "男たちの熱狂。75年以来の優勝。理屈抜きのパワーと、「マラゲーニャ」の爆音。会場全員がスタンディングオベーションした伝説の夜。"
+            },
+            { 
+                year: 1987, corps: "Garfield Cadets", show: "Appalachian Spring", score: "97.900", color: "#78002E",
+                desc: "コープランドの「アパラチアの春」。純白の美しさと、バレエのような優雅さ。マーチングが「芸術」として認められた瞬間。"
+            },
+            { 
+                year: 1986, corps: "Blue Devils", show: "Channel One Suite", score: "98.400", color: "#005596",
+                desc: "BDジャズの代名詞。とてつもない音圧とハイトーン。これぞアメリカン・ドラムコーという、力強さと華やかさが詰まったショー。"
+            },
+            { 
+                year: 1985, corps: "Garfield Cadets", show: "Jeremiah Symphony", score: "98.400", color: "#78002E",
+                desc: "バーンスタインの交響曲。複雑怪奇な変拍子を、まるで散歩するように歩くドリル。現代マーチングの基礎を作った知的な構成。"
+            },
+            { 
+                year: 1984, corps: "Garfield Cadets", show: "West Side Story", score: "98.000", color: "#78002E",
+                desc: "「ウエスト・サイド・ストーリー」。ドラマチックで躍動感あふれる展開。音楽と動きの完全な一致を目指した、トータル・コーディネートの走り。"
+            },
+            { 
+                year: 1983, corps: "Garfield Cadets", show: "Mass", score: "94.400", color: "#78002E",
+                desc: "東海岸の逆襲。それまでの直角的な動きを捨て、曲線的なドリルを導入した革命の年。ここからCadetsの黄金時代が始まった。"
+            },
+            { 
+                year: 1982, corps: "Blue Devils", show: "Music of Don Ellis", score: "95.250", color: "#005596",
+                desc: "変拍子の魔術師ドン・エリスの音楽。複雑なリズムをスウィングさせるBDのセンスが光る。無敵艦隊と呼ばれた時代の象徴。"
+            },
+            { 
+                year: 1981, corps: "Santa Clara Vanguard", show: "Young Person's Guide", score: "94.000", color: "#D9002A",
+                desc: "緻密さと完成度。当時のスコア記録を更新。クラシック音楽の構造を分解し、フィールド上で再構築した教科書のようなショー。"
+            },
+            { 
+                year: 1980, corps: "Blue Devils", show: "Procession of the Nobles", score: "90.600", color: "#005596",
+                desc: "貴族たちの行列。圧倒的なブラスサウンドでねじ伏せるスタイル。オフ・ザ・ライン（入場）から観客を威圧するようなオーラがあった。"
+            },
+            { 
+                year: 1979, corps: "Blue Devils", show: "Chicago III", score: "93.550", color: "#005596",
+                desc: "ロックバンドChicagoの楽曲。ポピュラー音楽を洗練されたブラスアレンジへ昇華。誰が聴いても楽しめる、王道のエンターテインメント。"
+            },
+            { 
+                year: 1978, corps: "Santa Clara Vanguard", show: "Gayne Ballet", score: "91.550", color: "#D9002A",
+                desc: "ハチャトゥリアンのバレエ音楽。ロシアン・ダンサーのような動きを取り入れ、シアトリカルな要素を強めた意欲作。"
+            },
+            { 
+                year: 1977, corps: "Blue Devils", show: "Channel One Suite", score: "92.050", color: "#005596",
+                desc: "伝説の始まり。ジャズドラマー、バディ・リッチの難曲を完璧に演奏。ソプラノ・ソロの凄まじさが語り継がれる。"
+            },
+            { 
+                year: 1976, corps: "Blue Devils", show: "Channel One Suite", score: "92.700", color: "#005596",
+                desc: "BD初優勝。西海岸の風。それまでのミリタリースタイルとは一線を画す、ファッショナブルで都会的な「クール」を確立した。"
+            },
+            { 
+                year: 1975, corps: "Madison Scouts", show: "The Way We Were", score: "92.500", color: "#004d2c",
+                desc: "これぞマディソン。「マッカーサー・パーク」の熱狂。男臭く、ラウドで、エネルギッシュ。観客を興奮の渦に巻き込むパワープレイ。"
+            },
+            { 
+                year: 1974, corps: "Santa Clara Vanguard", show: "Young Person's Guide", score: "89.500", color: "#D9002A",
+                desc: "「ボトルダンス」の誕生。膝をついて演奏する有名なギミックはここから。伝統と革新を融合させたSCVスタイルの確立。"
+            },
+            { 
+                year: 1973, corps: "Santa Clara Vanguard", show: "Fanfare and Allegro", score: "88.650", color: "#D9002A",
+                desc: "SCV初優勝。規律と芸術性の融合。当時のマーチング界に「美しさ」という基準を持ち込んだ。"
+            },
+            { 
+                year: 1972, corps: "Anaheim Kingsmen", show: "In Concert", score: "88.100", color: "#24488f",
+                desc: "初代DCI王者。すべてはここから始まった。ハイ・レッグリフト（膝を高く上げる歩き方）による厳格なミリタリースタイル。"
+            }
+        ];
+
+        // --- RENDER LOGIC ---
+        const container = document.getElementById('timeline-target');
+
+        history.forEach(item => {
+            const yearGroup = document.createElement('div');
+            yearGroup.className = 'year-group';
+            
+            let contentHTML = '';
+
+            // Helper: Create Card HTML
+            // Updated to pass 'desc' to the modal function
+            const createCard = (data, isTie = false) => {
+                const txtStyle = data.textColor ? `color:${data.textColor};` : '';
+                const titleStyle = data.textColor ? `color:${data.textColor}; border-color:#ccc;` : '';
+                const descStyle = data.textColor ? `color:#444; border-top-color:#ccc;` : '';
+                
+                // Escape single quotes for inline JS to prevent errors
+                const safeCorps = data.corps.replace(/'/g, "\\'");
+                const safeShow = data.show.replace(/'/g, "\\'");
+                const safeDesc = data.desc.replace(/'/g, "\\'");
+                
+                const clickAttr = !data.special ? `onclick="openModal('${data.year}', '${safeCorps}', '${safeShow}', '${safeDesc}')"` : '';
+                const hintHTML = data.special ? '' : `<div class="click-hint" style="${txtStyle}"><span class="play-icon">▶</span> YOUTUBE SEARCH</div>`;
+                
+                return `
+                    <div class="show-card" ${clickAttr} style="${data.special ? 'cursor:default;' : ''}">
+                        <div class="corps-color-bar" style="background-color: ${data.color}"></div>
+                        <div class="card-content" style="${data.color === '#f5f5f5' ? 'background:#f5f5f5;' : ''}">
+                            <span class="score-display" style="color:${data.color}; ${data.textColor ? 'color:#666;' : ''}">
+                                ${isTie ? 'TIE CHAMPION' : 'SCORE: ' + data.score}
+                            </span>
+                            <h3 class="corps-name" style="color:${data.textColor || '#fff'}">${data.corps}</h3>
+                            <span class="show-title" style="${titleStyle}">"${data.show}"</span>
+                            <p class="show-desc" style="${descStyle}">${data.desc}</p>
+                            ${hintHTML}
+                        </div>
+                    </div>
+                `;
+            };
+
+            if (item.tie) {
+                let cardsHTML = item.winners.map(w => createCard({...w, year: item.year}, true)).join('');
+                contentHTML = `
+                    <div class="year-badge">${item.year}</div>
+                    <div class="tie-container">${cardsHTML}</div>
+                `;
+            } else {
+                contentHTML = `
+                    <div class="year-badge">${item.year}</div>
+                    ${createCard(item)}
+                `;
+            }
+
+            yearGroup.innerHTML = contentHTML;
+            container.appendChild(yearGroup);
+        });
+
+        // --- OBSERVER ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+        document.querySelectorAll('.year-group').forEach(el => observer.observe(el));
+
+        // --- MODAL ---
+        const modal = document.getElementById('modal');
+        const mDesc = document.getElementById('m-desc'); // New element
+
+        // Updated function signature to accept description
+        function openModal(year, corps, show, desc) {
+            document.getElementById('m-year').innerText = year;
+            document.getElementById('m-corps').innerText = corps;
+            document.getElementById('m-show').innerText = `"${show}"`;
+            
+            // Set the description in the modal
+            mDesc.innerText = desc;
+
+            // Generate YouTube Link
+            const query = `DCI ${year} ${corps} ${show} full show`;
+            document.getElementById('m-link').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+            
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+        modal.onclick = (e) => { if(e.target === modal) closeModal(); };
+
+    </script>
+</body>
+</html>
