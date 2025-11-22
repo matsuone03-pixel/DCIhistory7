@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCI ARCHIVE | The Museum of Marching Arts</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. CORE DESIGN SYSTEM --- */
+        :root {
+            --bg-deep: #050505;
+            --bg-card: #121212;
+            --text-main: #ffffff;
+            --text-sub: #aaaaaa;
+            --gold: #FFD700;
+            --silver: #E5E4E2; /* For Phantom & Non-champs */
+            --bronze: #CD7F32;
+            --border-color: #333;
+            
+            /* Corps Colors */
+            --bd-blue: #005596;
+            --scv-red: #D9002A;
+            --cavies-green: #009639;
+            --cadets-maroon: #78002E;
+            --crown-purple: #532e6d;
+            --phantom-platinum: #E5E4E2; /* New Dark Mode Friendly Color */
+            --bluecoats-blue: #0099CC;
+            --madison-green: #004d2c;
+            --star-pink: #c53461;
+            --anaheim-blue: #24488f;
+
+            --font-head: 'Oswald', sans-serif;
+            --font-mono: 'Roboto Mono', monospace;
+            --font-body: 'Noto Sans JP', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- 2. HEADER & NAV --- */
+        header {
+            padding: 40px 20px;
+            text-align: center;
+            background: radial-gradient(circle at top, #1a1a1a 0%, #050505 100%);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky; top: 0; z-index: 50;
+            backdrop-filter: blur(10px);
+            background-color: rgba(5,5,5,0.8);
+        }
+        h1 {
+            font-family: var(--font-head); font-size: 2.5rem;
+            text-transform: uppercase; letter-spacing: -1px; cursor: pointer;
+            display: inline-block;
+        }
+        .nav-bar {
+            margin-top: 15px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: transparent; border: 1px solid #444; color: #888;
+            padding: 5px 15px; border-radius: 20px; cursor: pointer;
+            font-family: var(--font-head); text-transform: uppercase; font-size: 0.9rem;
+            transition: 0.2s;
+        }
+        .nav-btn:hover, .nav-btn.active {
+            border-color: var(--text-main); color: var(--text-main); background: #222;
+        }
+        
+        /* --- 3. TIMELINE LAYOUT --- */
+        .container {
+            max-width: 1000px; margin: 0 auto; padding: 40px 20px; position: relative; min-height: 80vh;
+        }
+        
+        /* Section Title (Displays Corps Name) */
+        .page-title {
+            text-align: center; margin-bottom: 60px; opacity: 0; animation: fadeIn 0.5s forwards; display: none;
+        }
+        .page-title h2 { font-family: var(--font-head); font-size: 4rem; text-transform: uppercase; line-height: 1; }
+        .page-title p { color: var(--text-sub); letter-spacing: 2px; }
+
+        /* Vertical Line */
+        .timeline-line {
+            position: absolute; top: 0; bottom: 0; left: 50%; width: 2px;
+            background: linear-gradient(180deg, transparent, #333 10%, #333 90%, transparent);
+            transform: translateX(-50%); z-index: 0;
+        }
+
+        .year-group {
+            display: flex; justify-content: center; align-items: center;
+            margin-bottom: 60px; position: relative; z-index: 1;
+            opacity: 0; transform: translateY(30px);
+            transition: all 0.6s ease-out;
+        }
+        .year-group.visible { opacity: 1; transform: translateY(0); }
+
+        /* Year Badge */
+        .year-badge {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: var(--bg-deep); border: 2px solid #444;
+            color: #888; font-family: var(--font-head); font-size: 1.2rem; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            position: absolute; left: 50%; transform: translateX(-50%);
+            z-index: 2; transition: 0.3s;
+        }
+        /* Champion Year Badge Style */
+        .year-group.champion .year-badge {
+            border-color: var(--gold); color: var(--gold);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); width: 70px; height: 70px; font-size: 1.5rem;
+        }
+
+        /* Content Card */
+        .show-card {
+            width: 42%; background: var(--bg-card);
+            border-radius: 8px; overflow: hidden; border: 1px solid #222;
+            position: relative; cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .show-card:hover {
+            transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-color: #555;
+        }
+
+        /* Alternating Layout */
+        .year-group:nth-child(odd) .show-card { margin-right: auto; text-align: right; }
+        .year-group:nth-child(even) .show-card { margin-left: auto; text-align: left; }
+        
+        /* Connectors */
+        .year-group:nth-child(odd) .show-card::after {
+            content: ''; position: absolute; top: 30px; right: -38px; width: 38px; height: 1px; background: #333;
+        }
+        .year-group:nth-child(even) .show-card::before {
+            content: ''; position: absolute; top: 30px; left: -38px; width: 38px; height: 1px; background: #333;
+        }
+
+        /* Card Content */
+        .corps-color-bar { height: 4px; width: 100%; }
+        .card-body { padding: 20px; }
+        
+        .rank-badge {
+            display: inline-block; font-family: var(--font-mono); font-size: 0.8rem; 
+            padding: 2px 6px; border-radius: 4px; background: #222; color: #888; margin-bottom: 5px;
+        }
+        .champion .rank-badge { background: var(--gold); color: #000; font-weight: bold; }
+        
+        .corps-name { font-family: var(--font-head); font-size: 1.5rem; line-height: 1.1; text-transform: uppercase; margin-bottom: 5px; color: #fff; }
+        .show-title { font-size: 1rem; color: #ccc; font-style: italic; display: block; margin-bottom: 10px; }
+        
+        /* Filter for Corps Page (Always show corps name in header, remove from card?) 
+           Actually keeping it in card is better for context when sharing screenshots */
+
+        /* Tie Container */
+        .tie-container { width: 42%; display: flex; flex-direction: column; gap: 15px; }
+        .year-group:nth-child(odd) .tie-container { margin-right: auto; align-items: flex-end; }
+        .year-group:nth-child(even) .tie-container { margin-left: auto; align-items: flex-start; }
+        .tie-container .show-card { width: 100%; }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(5px);
+            z-index: 100; display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; }
+        .modal-window {
+            width: 90%; max-width: 600px; background: #161616; border: 1px solid #444;
+            border-radius: 16px; padding: 40px; text-align: center;
+            transform: scale(0.9); transition: transform 0.3s;
+        }
+        .modal-overlay.active .modal-window { transform: scale(1); }
+        
+        .btn-youtube {
+            display: inline-block; background: #cc0000; color: white; margin-top: 20px;
+            padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: bold;
+            font-family: var(--font-head); letter-spacing: 1px; transition: 0.2s;
+        }
+        .btn-youtube:hover { box-shadow: 0 5px 20px rgba(200,0,0,0.4); transform: translateY(-2px); }
+
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .timeline-line { left: 30px; }
+            .year-badge { left: 30px; width: 40px; height: 40px; font-size: 0.9rem; }
+            .year-group.champion .year-badge { width: 50px; height: 50px; font-size: 1.1rem; }
+            .year-group { flex-direction: column; align-items: flex-end; margin-bottom: 40px; }
+            .show-card, .tie-container { width: calc(100% - 60px); margin-left: auto !important; text-align: left !important; }
+            .year-group:nth-child(odd) .show-card::after, .year-group:nth-child(even) .show-card::before { display: none; }
+            .page-title h2 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 onclick="renderTimeline('ALL')">DCI ARCHIVE</h1>
+        <div class="nav-bar" id="nav-container">
+            </div>
+    </header>
+
+    <div class="container">
+        <div class="page-title" id="page-header">
+            <h2 id="ph-title">CORPS NAME</h2>
+            <p id="ph-desc">HISTORY OF EXCELLENCE</p>
+        </div>
+
+        <div class="timeline-line"></div>
+        <div id="timeline-target">
+            </div>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal-window">
+            <div style="align-self: flex-end; font-size:2rem; cursor:pointer; color:#888;" onclick="closeModal()">&times;</div>
+            <div style="color:var(--gold); font-family:var(--font-mono); margin-bottom:5px;" id="m-year">YEAR</div>
+            <div style="font-size:0.9rem; color:#888; margin-bottom:10px;" id="m-rank">RANK</div>
+            <h2 style="font-family:var(--font-head); font-size:2rem; line-height:1; color:#fff; margin-bottom:10px;" id="m-corps">CORPS</h2>
+            <p style="color:#fff; font-style:italic; font-size:1.2rem;" id="m-show">SHOW</p>
+            <p style="font-size: 0.9rem; color: #ccc; margin: 20px 0; line-height: 1.6; text-align:left; border-top:1px solid #333; padding-top:15px;" id="m-desc">Description</p>
+            <a href="#" target="_blank" class="btn-youtube" id="m-link">▶ SEARCH YOUTUBE</a>
+            <div style="margin-top:20px; cursor:pointer; color:var(--text-sub); font-size:0.8rem; text-decoration:underline;" onclick="filterByCorpsFromModal()">See Full History of this Corps</div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * THE MASTER DATABASE
+         * Includes Champions + Notable Non-Winning Shows (Plan B Expansion)
+         * Data structure supports 'rank' and 'isChamp'
+         */
+        const db = [
+            // 2024
+            { year: 2024, corps: "Bluecoats", show: "Change Is Everything", score: "98.750", rank: "1st", isChamp: true, color: "var(--bluecoats-blue)", desc: "エントロピーと混沌。常に変化し続けるステージと、静寂すらも音楽にした現代アート。" },
+            { year: 2024, corps: "Boston Crusaders", show: "Glitch", score: "97.413", rank: "2nd", isChamp: false, color: "#cc0000", desc: "不具合（Glitch）を表現。映像的なエフェクトと強烈なカラーガードで魅せた、団史上最高順位。" },
+            
+            // 2023
+            { year: 2023, corps: "Blue Devils", show: "The Cut-Outs", score: "99.200", rank: "1st", isChamp: true, color: "var(--bd-blue)", desc: "マティスの切り絵。視覚と聴覚の境界を溶かす色彩感覚。BDの芸術性が極まった年。" },
+            { year: 2023, corps: "Bluecoats", show: "The Garden of Love", score: "97.738", rank: "2nd", isChamp: false, color: "var(--bluecoats-blue)", desc: "ウィリアム・ブレイクの詩。サイケデリックで詩的な世界観。" },
+
+            // 2022
+            { year: 2022, corps: "Blue Devils", show: "Tempus Blue", score: "98.750", rank: "1st", isChamp: true, color: "var(--bd-blue)", desc: "「青」の起源。ジャズ、クラシック、現代音楽を自在に行き来するBDサウンド。" },
+            { year: 2022, corps: "Boston Crusaders", show: "Paradise Lost", score: "97.325", rank: "2nd", isChamp: false, color: "#cc0000", desc: "失楽園。圧倒的な迫力のストーリーテリング。" },
+
+            // 2019
+            { year: 2019, corps: "Blue Devils", show: "Ghostlight", score: "98.325", rank: "1st", isChamp: true, color: "var(--bd-blue)", desc: "劇場に棲むゴースト。フィールド全体を巨大な舞台装置に変貌させた。" },
+            { year: 2019, corps: "Bluecoats", show: "The Bluecoats", score: "98.238", rank: "2nd", isChamp: false, color: "var(--bluecoats-blue)", desc: "ビートルズへのオマージュ。革新的で最高にクールなショー。" },
+
+            // 2018
+            { year: 2018, corps: "Santa Clara Vanguard", show: "Babylon", score: "98.625", rank: "1st", isChamp: true, color: "var(--scv-red)", desc: "SCV悲願の復活優勝。都会の孤独と再生。「My Body is a Cage」の金管の音圧は伝説。" },
+            { year: 2018, corps: "Blue Devils", show: "Dreams and Nighthawks", score: "97.350", rank: "2nd", isChamp: false, color: "var(--bd-blue)", desc: "エドワード・ホッパーの絵画「ナイトホークス」。映画のようなセット。" },
+
+            // 2017
+            { year: 2017, corps: "Blue Devils", show: "Metamorph", score: "99.650", rank: "1st", isChamp: true, color: "var(--bd-blue)", desc: "創設60周年。伝統から現代への脱皮。DCI史上最高得点を記録した進化の象徴。" },
+            { year: 2017, corps: "Santa Clara Vanguard", show: "Ouroboros", score: "97.600", rank: "2nd", isChamp: false, color: "var(--scv-red)", desc: "ウロボロス（無限）。複雑な曲線ドリルが美しい傑作。" },
+
+            // 2016
+            { year: 2016, corps: "Bluecoats", show: "Down Side Up", score: "97.650", rank: "1st", isChamp: true, color: "var(--bluecoats-blue)", desc: "革命の年。制服を脱ぎ、スロープを導入。マーチングを「舞台芸術」に変えたゲームチェンジャー。" },
+            { year: 2016, corps: "Blue Devils", show: "As Dreams Are Made On", score: "97.250", rank: "2nd", isChamp: false, color: "var(--bd-blue)", desc: "シェイクスピア「テンペスト」。2位ながらも圧倒的な完成度。" },
+
+            // 2015
+            { year: 2015, corps: "Blue Devils", show: "Ink", score: "97.650", rank: "1st", isChamp: true, color: "var(--bd-blue)", desc: "インクと物語。K-POPからクラシックまで。絵本から飛び出したようなファンタジー。" },
+            { year: 2015, corps: "Carolina Crown", show: "Inferno", score: "97.075", rank: "2nd", isChamp: false, color: "var(--crown-purple)", desc: "地獄篇。真紅の衣装と、燃え上がるようなブラスサウンド。" },
+
+            // 2014
+            { year: 2014, corps: "Blue Devils", show: "Felliniesque", score: "99.650", rank: "1st", isChamp: true, color: "var(--bd-blue)", desc: "フェリーニ映画の世界。サーカスのような祝祭感と、99.65という驚異のスコア。" },
+            { year: 2014, corps: "Bluecoats", show: "Tilt", score: "97.175", rank: "2nd", isChamp: false, color: "var(--bluecoats-blue)", desc: "傾き（Tilt）。電子音とブラスの融合を決定づけた人気作。" },
+
+            // 2013
+            { year: 2013, corps: "Carolina Crown", show: "E=mc²", score: "98.300", rank: "1st", isChamp: true, color: "var(--crown-purple)", desc: "Crown初優勝。物理法則への挑戦。30人の金管が一つになる「紫の音圧」は最強。" },
+            { year: 2013, corps: "Blue Devils", show: "The Re:Rite of Spring", score: "98.050", rank: "2nd", isChamp: false, color: "var(--bd-blue)", desc: "春の祭典の再構築。あまりにも難解で前衛的な、BD屈指の問題作。" },
+
+            // 2012
+            { year: 2012, corps: "Blue Devils", show: "Cabaret Voltaire", score: "98.700", rank: "1st", isChamp: true, color: "var(--bd-blue)", desc: "ダダイズム。不条理とカオス。理解を超えた先にある「美」を提示した。" },
+            { year: 2012, corps: "Carolina Crown", show: "For the Common Good", score: "97.650", rank: "2nd", isChamp: false, color: "var(--crown-purple)", desc: "コープランド「市民のためのファンファーレ」。正統派マーチングの極み。" },
+
+            // 2011
+            { year: 2011, corps: "The Cadets", show: "Between Angels and Demons", score: "98.350", rank: "1st", isChamp: true, color: "var(--cadets-maroon)", desc: "天使と悪魔。ユニフォームを左右で色分けし、善悪の葛藤を視覚化。" },
+
+            // 2010
+            { year: 2010, corps: "Blue Devils", show: "Through a Glass, Darkly", score: "98.900", rank: "1st", isChamp: true, color: "var(--bd-blue)", desc: "鏡の世界。フィールド上の鏡が現実と虚構を撹乱させる知的トリック。" },
+            { year: 2010, corps: "The Cavaliers", show: "Mad World", score: "97.750", rank: "2nd", isChamp: false, color: "var(--cavies-green)", desc: "狂気の世界。ライフル銃を持った笑顔の兵隊。不気味さと美しさ。" },
+
+            // 2008 (LEGENDARY YEAR)
+            { year: 2008, corps: "Phantom Regiment", show: "Spartacus", score: "98.125", rank: "1st", isChamp: true, color: "var(--phantom-platinum)", desc: "伝説の逆転劇。「私はスパルタクスだ！」指揮者殺害のラストは永遠の語り草。" },
+            { year: 2008, corps: "Blue Devils", show: "Constantly Risking Absurdity", score: "98.100", rank: "2nd", isChamp: false, color: "var(--bd-blue)", desc: "不条理への挑戦。マラソンランナーのように走り続ける運動量。わずか0.025点差の2位。" },
+
+            // 2006
+            { year: 2006, corps: "The Cavaliers", show: "Machine", score: "97.200", rank: "1st", isChamp: true, color: "var(--cavies-green)", desc: "ロボット化。感情を排した機械的な動きとサウンドの美学。" },
+            { year: 2006, corps: "Phantom Regiment", show: "Faust", score: "96.850", rank: "2nd", isChamp: false, color: "var(--phantom-platinum)", desc: "ファウストの悲劇。悪魔との契約を描く、ダークで重厚なオペラ。" },
+
+            // 2005
+            { year: 2005, corps: "The Cadets", show: "The Zone", score: "99.150", rank: "1st", isChamp: true, color: "var(--cadets-maroon)", desc: "夢の中の世界。逆再生やドアの演出など、演劇的要素の導入。" },
+
+            // 2004
+            { year: 2004, corps: "The Cavaliers", show: "007", score: "98.700", rank: "1st", isChamp: true, color: "var(--cavies-green)", desc: "ジェームズ・ボンド。クールなスパイ映画を完全再現したエンタメ大作。" },
+            { year: 2004, corps: "Blue Devils", show: "The SummerTrain Blues Mix", score: "98.525", rank: "2nd", isChamp: false, color: "var(--bd-blue)", desc: "機関車の旅。鉄道のリズムとブルース。最高にスウィングするBD。" },
+
+            // 2002
+            { year: 2002, corps: "The Cavaliers", show: "Frameworks", score: "99.150", rank: "1st", isChamp: true, color: "var(--cavies-green)", desc: "シンメトリーの悪魔。幾何学的なドリルデザインの最高到達点。" },
+
+            // 2000
+            { year: 2000, tie: true, winners: [
+                { corps: "The Cadets", show: "We Are The Future", score: "97.650", rank: "1st", color: "var(--cadets-maroon)", desc: "ミレニアム。希望に満ちた超高速パフォーマンス。" },
+                { corps: "The Cavaliers", show: "Niagara Falls", score: "97.650", rank: "1st", color: "var(--cavies-green)", desc: "ナイアガラの滝。水の流れを表現したドリルの革命。" }
+            ]},
+
+            // 1999
+            { year: 1999, tie: true, winners: [
+                { corps: "Blue Devils", show: "Rhythms... At the Edge of Time", score: "98.400", rank: "1st", color: "var(--bd-blue)", desc: "リズムの極致。変拍子を制する者は世界を制す。" },
+                { corps: "Santa Clara Vanguard", show: "Inventions for a New Millennium", score: "98.400", rank: "1st", color: "var(--scv-red)", desc: "都会的ミニマリズム。スタイリッシュなSCVの誕生。" }
+            ]},
+
+            // 1996
+            { year: 1996, tie: true, winners: [
+                { corps: "Blue Devils", show: "Club Blue", score: "97.400", rank: "1st", color: "var(--bd-blue)", desc: "暗黒街のギャング。タフでワイルドなハードボイルド・ジャズ。" },
+                { corps: "Phantom Regiment", show: "A Defiant Heart", score: "97.400", rank: "1st", color: "var(--phantom-platinum)", desc: "ショスタコーヴィチ。魂を削るような重厚なシンフォニー。" }
+            ]},
+
+            // 1995
+            { year: 1995, corps: "The Cavaliers", show: "The Planets", score: "98.300", rank: "1st", isChamp: true, color: "var(--cavies-green)", desc: "惑星。宇宙的な広がりと、ヴィジュアル重視への転換点。" },
+
+            // 1993
+            { year: 1993, corps: "The Cadets", show: "In the Spring...", score: "97.400", rank: "1st", isChamp: true, color: "var(--cadets-maroon)", desc: "戦争と平和。超高速ドリルで伝説の死闘を制した。" },
+            { year: 1993, corps: "Star of Indiana", show: "The Pines of Rome", score: "97.300", rank: "2nd", isChamp: false, color: "var(--star-pink)", desc: "ローマの松。あまりに前衛的でミニマル。現代マーチングの礎を作った伝説の2位。" },
+
+            // 1991
+            { year: 1991, corps: "Star of Indiana", show: "Roman Images", score: "97.000", rank: "1st", isChamp: true, color: "var(--star-pink)", desc: "ローマの栄華。十字架のドリルは永遠のアイコン。" },
+
+            // 1989
+            { year: 1989, corps: "Santa Clara Vanguard", show: "Phantom of the Opera", score: "98.800", rank: "1st", isChamp: true, color: "var(--scv-red)", desc: "オペラ座の怪人。マジックのような演出とドラマチックな物語。" },
+            { year: 1989, corps: "Phantom Regiment", show: "New World Symphony", score: "98.400", rank: "2nd", isChamp: false, color: "var(--phantom-platinum)", desc: "新世界より。純白の美しさと、爆発的なサウンド。" },
+
+            // 1988
+            { year: 1988, corps: "Madison Scouts", show: "Malaguena", score: "97.100", rank: "1st", isChamp: true, color: "var(--madison-green)", desc: "マラゲーニャ。理屈抜きのパワーと熱狂。" },
+
+            // 1987
+            { year: 1987, corps: "Garfield Cadets", show: "Appalachian Spring", score: "97.900", rank: "1st", isChamp: true, color: "var(--cadets-maroon)", desc: "アパラチアの春。マーチングが「芸術」になった瞬間。" },
+            { year: 1987, corps: "Santa Clara Vanguard", show: "Russian Christmas Music", score: "97.800", rank: "2nd", isChamp: false, color: "var(--scv-red)", desc: "ロシアン・クリスマス。雪原のような美しさと荘厳さ。" },
+
+            // 1975
+            { year: 1975, corps: "Madison Scouts", show: "The Way We Were", score: "92.500", rank: "1st", isChamp: true, color: "var(--madison-green)", desc: "マッカーサー・パーク。男たちの熱い夏。" },
+            
+            // 1972
+            { year: 1972, corps: "Anaheim Kingsmen", show: "In Concert", score: "88.100", rank: "1st", isChamp: true, color: "var(--anaheim-blue)", desc: "初代王者。伝説の始まり。" }
+        ];
+
+        // --- VIEW LOGIC ---
+        const container = document.getElementById('timeline-target');
+        const navContainer = document.getElementById('nav-container');
+        const pageHeader = document.getElementById('page-header');
+        const pageTitle = document.getElementById('ph-title');
+        const pageDesc = document.getElementById('ph-desc');
+
+        // Generate Navigation Buttons
+        const corpsList = ["Blue Devils", "Santa Clara Vanguard", "The Cavaliers", "Phantom Regiment", "Carolina Crown", "Bluecoats", "The Cadets", "Madison Scouts"];
+        
+        corpsList.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = 'nav-btn';
+            btn.innerText = c;
+            btn.onclick = () => renderTimeline(c);
+            navContainer.appendChild(btn);
+        });
+
+        function renderTimeline(filter) {
+            // Clear current content
+            container.innerHTML = '';
+            
+            // Update Header
+            if(filter === 'ALL') {
+                pageHeader.style.display = 'none';
+            } else {
+                pageHeader.style.display = 'block';
+                pageTitle.innerText = filter;
+                pageTitle.style.color = getCorpsColor(filter);
+                pageDesc.innerText = "COMPLETE HISTORICAL ARCHIVE";
+            }
+
+            // Filter Data
+            let filteredData = db;
+            if (filter !== 'ALL') {
+                filteredData = db.filter(item => {
+                    if(item.tie) return item.winners.some(w => w.corps === filter);
+                    return item.corps === filter;
+                });
+            } else {
+                // For Home Page, only show Champions to keep it clean? 
+                // Or show EVERYTHING mixed? Let's show Champions + Ties for Main Page
+                // to avoid clutter, but Corps pages show everything.
+                filteredData = db.filter(item => item.isChamp || item.tie);
+            }
+
+            // Render
+            filteredData.forEach((item, index) => {
+                const group = document.createElement('div');
+                
+                // Determine style classes
+                let isChamp = item.isChamp || (item.tie && item.winners.some(w => w.rank === '1st'));
+                // If filtering by corps, check if THIS corps won that year
+                if (filter !== 'ALL' && item.tie) {
+                    const winner = item.winners.find(w => w.corps === filter);
+                    if(winner) isChamp = true; 
+                } else if (filter !== 'ALL') {
+                    isChamp = (item.rank === '1st');
+                }
+
+                group.className = `year-group ${isChamp ? 'champion' : ''}`;
+                group.style.animationDelay = `${index * 0.1}s`; // Stagger animation
+
+                let content = '';
+
+                if (item.tie && filter === 'ALL') {
+                    // Tie View (Home)
+                    let cards = item.winners.map(w => createCardHTML(w, item.year, true)).join('');
+                    content = `
+                        <div class="year-badge">${item.year}</div>
+                        <div class="tie-container">${cards}</div>
+                    `;
+                } else if (item.tie && filter !== 'ALL') {
+                    // Tie View (Corps Specific - only show the filtered corps)
+                    const specificData = item.winners.find(w => w.corps === filter);
+                    if (specificData) {
+                        content = `
+                            <div class="year-badge">${item.year}</div>
+                            ${createCardHTML(specificData, item.year, true)}
+                        `;
+                    }
+                } else {
+                    // Normal View
+                    content = `
+                        <div class="year-badge">${item.year}</div>
+                        ${createCardHTML(item, item.year, false)}
+                    `;
+                }
+
+                group.innerHTML = content;
+                container.appendChild(group);
+            });
+
+            // Re-trigger observer
+            attachObserver();
+        }
+
+        function createCardHTML(data, year, isTie) {
+            // Color Logic (Phantom fix handled in variable)
+            const safeCorps = data.corps.replace(/'/g, "\\'");
+            const safeShow = data.show.replace(/'/g, "\\'");
+            const safeDesc = (data.desc || "").replace(/'/g, "\\'");
+            
+            return `
+                <div class="show-card" onclick="openModal('${year}', '${safeCorps}', '${safeShow}', '${safeDesc}', '${data.rank}')">
+                    <div class="corps-color-bar" style="background-color: ${data.color}"></div>
+                    <div class="card-body">
+                        <span class="rank-badge">${data.rank === '1st' ? 'WORLD CHAMPION' : data.rank}</span>
+                        <h3 class="corps-name" style="color:${data.corps === 'Phantom Regiment' ? 'var(--silver)' : data.color}">${data.corps}</h3>
+                        <span class="show-title">"${data.show}"</span>
+                        <div style="font-size:0.8rem; color:#666; margin-top:10px;">SCORE: ${data.score}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getCorpsColor(name) {
+            const found = db.find(i => i.corps === name || (i.winners && i.winners.some(w => w.corps === name)));
+            if(found) {
+                if(found.tie) return found.winners.find(w => w.corps === name).color;
+                return found.color;
+            }
+            return '#fff';
+        }
+
+        // --- OBSERVER ---
+        function attachObserver() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) entry.target.classList.add('visible');
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.year-group').forEach(el => observer.observe(el));
+        }
+
+        // --- MODAL ---
+        const modal = document.getElementById('modal');
+        let currentModalCorps = ""; // To remember for navigation
+
+        function openModal(year, corps, show, desc, rank) {
+            document.getElementById('m-year').innerText = year;
+            document.getElementById('m-rank').innerText = rank === '1st' ? 'WORLD CHAMPION' : `FINALS RANK: ${rank}`;
+            const mCorps = document.getElementById('m-corps');
+            mCorps.innerText = corps;
+            mCorps.style.color = corps === 'Phantom Regiment' ? 'var(--silver)' : getCorpsColor(corps);
+            
+            document.getElementById('m-show').innerText = `"${show}"`;
+            document.getElementById('m-desc').innerText = desc;
+            
+            currentModalCorps = corps; // Store for linking
+
+            const query = `DCI ${year} ${corps} ${show} full show`;
+            document.getElementById('m-link').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+            
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+        
+        function filterByCorpsFromModal() {
+            closeModal();
+            // Small timeout to allow modal to close smoothly
+            setTimeout(() => {
+                renderTimeline(currentModalCorps);
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }, 300);
+        }
+
+        modal.onclick = (e) => { if(e.target === modal) closeModal(); };
+
+        // Init
+        renderTimeline('ALL');
+
+    </script>
+</body>
+</html>
